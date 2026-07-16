@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard Cá Nhân</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; display: flex; height: 100vh; overflow: hidden; }
+        
+        /* Sidebar */
+        #sidebar { width: 260px; background: #1a252f; color: #ecf0f1; padding: 20px 0; box-shadow: 2px 0 5px rgba(0,0,0,0.1); }
+        #sidebar h2 { padding: 0 20px; margin-bottom: 25px; font-size: 1.1rem; color: #3498db; text-transform: uppercase; }
+        #sidebar ul { list-style: none; }
+        #sidebar li { padding: 15px 20px; cursor: pointer; border-left: 4px solid transparent; transition: 0.3s; }
+        #sidebar li:hover { background: #2c3e50; border-left: 4px solid #3498db; }
+        
+        /* Main Area */
+        #main-container { flex-grow: 1; display: flex; flex-direction: column; background: #f4f7f6; }
+        header { padding: 20px; background: white; font-weight: bold; border-bottom: 1px solid #ddd; font-size: 1.2rem; }
+        iframe { flex-grow: 1; border: none; width: 100%; }
+    </style>
+</head>
+<body>
+
+    <div id="sidebar">
+        <h2>Công cụ của tôi</h2>
+        <ul>
+            <li onclick="loadTool('https://dmxbh5277.github.io/locpmh/', 'Lọc PMH')">Lọc PMH</li>
+            <li onclick="loadTool('https://dmxbh5277.github.io/coupon/', 'Lọc Coupon')">Lọc Coupon</li>
+            <li onclick="loadTool('https://dmxbh5277.github.io/BCQ-/', 'Báo cáo quy đổi')">Báo cáo quy đổi</li>
+            <li onclick="loadTool('https://dmxbh5277.github.io/BH/', 'Tính Bảo hiểm')">Tính Bảo hiểm</li>
+        </ul>
+    </div>
+
+    <div id="main-container">
+        <header id="page-title">Chào mừng bạn trở lại!</header>
+        <iframe id="tool-frame" src="about:blank"></iframe>
+    </div>
+
+    <script>
+        function loadTool(url, title) {
+            document.getElementById('tool-frame').src = url;
+            document.getElementById('page-title').innerText = title;
+        }
+    </script>
+</body>
+</html>

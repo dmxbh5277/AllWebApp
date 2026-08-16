@@ -2,93 +2,168 @@
 <html lang="vi">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>My Hub - Assistive Touch</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>My Hub - Premium</title>
     <style>
-        * { box-sizing: border-box; margin: 0; padding: 0; }
-        body { font-family: sans-serif; height: 100vh; overflow: hidden; background: #0f172a; }
-
-        /* Container chứa web app */
-        #main-container { width: 100%; height: 100vh; }
-        iframe { width: 100%; height: 100%; border: none; }
-
-        /* Assistive Touch Container */
-        #assistive-touch {
-            position: fixed;
-            bottom: 30px;
-            right: 30px;
-            z-index: 9999;
-            user-select: none;
-            touch-action: none; /* Ngăn trình duyệt cuộn trang khi đang kéo nút */
+        /* Reset & Cơ bản */
+        * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+        body { 
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; 
+            height: 100vh; 
+            overflow: hidden; 
+            background-color: #0f172a; 
+            overscroll-behavior: none; /* Chống kéo trang trên mobile */
         }
 
-        /* Nút tròn Assistive Touch */
+        /* Container chứa web app */
+        #main-container { width: 100%; height: 100vh; position: relative; }
+        iframe { width: 100%; height: 100%; border: none; display: block; }
+
+        /* --- Vùng Assistive Touch (Nút nổi) --- */
+        #assistive-touch {
+            position: fixed;
+            bottom: 25px;
+            right: 25px;
+            z-index: 9999;
+            user-select: none;
+            touch-action: none; /* Quan trọng cho mobile drag */
+            will-change: transform;
+        }
+
+        /* --- Thiết kế Nút bấm (The Button) --- */
         #touch-btn {
-            width: 55px;
-            height: 55px;
-            background: linear-gradient(135deg, #3498db, #2980b9);
-            color: white;
+            width: 60px;
+            height: 60px;
+            
+            /* Hiệu ứng Glassmorphism */
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            
+            border: 1px solid rgba(255, 255, 255, 0.2);
             border-radius: 50%;
+            
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3), 
+                        inset 0 0 0 1px rgba(255, 255, 255, 0.1);
+            
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 24px;
             cursor: pointer;
-            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.4);
-            touch-action: none;
-            transition: transform 0.2s;
+            
+            transition: transform 0.2s ease, box-shadow 0.3s ease, background 0.3s ease;
+            
+            /* Icon Menu (Dùng ký tự Unicode đẹp hơn) */
+            color: rgba(255, 255, 255, 0.9);
+            font-size: 28px;
+            line-height: 1;
+            font-weight: 300;
         }
+
+        /* Hiệu ứng khi nhấn/chạm */
         #touch-btn:active {
             transform: scale(0.95);
+            background: rgba(255, 255, 255, 0.15);
         }
 
-        /* Menu danh sách web dạng popup nổi */
+        /* Khi menu đang mở, nút biến thành dấu X */
+        #assistive-touch.menu-open #touch-btn {
+            content: '✕'; /* Không hoạt động trực tiếp bằng content CSS, sẽ dùng JS đổi text */
+            background: rgba(52, 152, 219, 0.2);
+            border-color: rgba(52, 152, 219, 0.5);
+            color: #3498db;
+            transform: rotate(90deg);
+        }
+        
+        /* Ẩn ký tự mặc định khi đổi icon */
+        #assistive-touch.menu-open #touch-btn .icon-bar { opacity: 0; }
+        #assistive-touch.menu-open #touch-btn .icon-close { opacity: 1; }
+
+        #touch-btn .btn-icon {
+            position: absolute;
+            transition: opacity 0.3s ease, transform 0.3s ease;
+        }
+        #touch-btn .icon-close { opacity: 0; transform: rotate(-90deg); font-size: 24px; font-weight: bold;}
+        #touch-btn .icon-bar { opacity: 1; transform: rotate(0deg); }
+
+
+        /* --- Thiết kế Menu Popup --- */
         #touch-menu {
             position: absolute;
-            bottom: 70px;
+            bottom: 75px; /* Cách nút nổi một khoảng */
             right: 0;
-            width: 240px;
-            background: rgba(26, 37, 47, 0.95);
-            backdrop-filter: blur(12px);
-            border-radius: 12px;
-            box-shadow: 0 10px 25px rgba(0,0,0,0.4);
-            overflow: hidden;
-            display: none;
-            flex-direction: column;
+            width: 220px;
+            
+            /* Nền menu sang trọng */
+            background: rgba(30, 41, 59, 0.95);
+            backdrop-filter: blur(15px);
+            -webkit-backdrop-filter: blur(15px);
+            
+            border-radius: 16px;
             border: 1px solid rgba(255, 255, 255, 0.1);
-            animation: fadeIn 0.2s ease-in-out;
-        }
-        #touch-menu.active {
-            display: flex;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.5),
+                        0 0 0 1px rgba(0,0,0,0.1);
+            
+            padding: 8px 0;
+            visibility: hidden; /* Ẩn bằng visibility để animate */
+            opacity: 0;
+            transform: translateY(15px) scale(0.95);
+            transition: opacity 0.3s ease, transform 0.3s ease, visibility 0.3s;
+            transform-origin: bottom right; /* Điểm bung menu ra */
         }
 
-        #touch-menu ul {
-            list-style: none;
-            padding: 5px 0;
+        /* Hiển thị menu khi có class active */
+        #assistive-touch.menu-open #touch-menu {
+            visibility: visible;
+            opacity: 1;
+            transform: translateY(0) scale(1);
         }
+
+        #touch-menu ul { list-style: none; }
 
         #touch-menu li {
-            padding: 14px 18px;
-            color: white;
+            padding: 12px 20px;
+            color: rgba(255, 255, 255, 0.85);
             cursor: pointer;
-            font-size: 14px;
-            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
-            transition: background 0.2s;
+            font-size: 15px;
+            font-weight: 500;
+            transition: background 0.2s ease, color 0.2s ease, padding-left 0.2s ease;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.03);
+            display: flex;
+            align-items: center;
         }
+        
+        #touch-menu li:last-child { border-bottom: none; }
 
-        #touch-menu li:last-child {
-            border-bottom: none;
-        }
-
-        #touch-menu li:hover, #touch-menu li:active {
-            background: rgba(52, 152, 219, 0.3);
+        /* Icon nhỏ trước mỗi mục menu (tùy chọn, thêm vào cho sang) */
+        #touch-menu li::before {
+            content: '•';
             color: #3498db;
+            font-size: 20px;
+            margin-right: 10px;
+            opacity: 0;
+            transition: opacity 0.2s;
         }
 
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(10px) scale(0.95); }
-            to { opacity: 1; transform: translateY(0) scale(1); }
+        /* Hiệu ứng hover menu */
+        #touch-menu li:hover {
+            background: rgba(52, 152, 219, 0.15);
+            color: #3498db;
+            padding-left: 24px; /* Thụt vào một chút khi hover */
         }
+        
+        #touch-menu li:hover::before {
+            opacity: 1;
+        }
+
+        /* Scrollbar cho menu nếu danh sách quá dài */
+        #touch-menu ul {
+            max-height: calc(100vh - 150px);
+            overflow-y: auto;
+        }
+        #touch-menu ul::-webkit-scrollbar { width: 4px; }
+        #touch-menu ul::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 2px; }
+
     </style>
 </head>
 <body>
@@ -97,9 +172,13 @@
         <iframe id="tool-frame" src="https://dmxbh5277.github.io/locpmh/"></iframe>
     </div>
 
-    <!-- Nút Assistive Touch -->
+    <!-- Nút Assistive Touch (Giao diện mới) -->
     <div id="assistive-touch">
-        <div id="touch-btn" title="Menu Công Cụ">🔘</div>
+        <div id="touch-btn">
+            <span class="btn-icon icon-bar">☰</span>
+            <span class="btn-icon icon-close">✕</span>
+        </div>
+        
         <div id="touch-menu">
             <ul>
                 <li onclick="loadTool('https://dmxbh5277.github.io/locpmh/')">Lọc PMH</li>
@@ -112,80 +191,127 @@
     </div>
 
     <script>
-        const touchContainer = document.getElementById('assistive-touch');
+        const wrapper = document.getElementById('assistive-touch');
         const touchBtn = document.getElementById('touch-btn');
         const touchMenu = document.getElementById('touch-menu');
+        const iframe = document.getElementById('tool-frame');
 
         let isDragging = false;
-        let startX, startY, initialX, initialY;
         let hasMoved = false;
+        let startX, startY, initialX, initialY;
+        let pressTimer;
 
-        // Xử lý sự kiện bằng Pointer Events (Tương thích tốt cả Mobile và PC)
-        touchBtn.addEventListener('pointerdown', (e) => {
+        // --- Xử lý Kéo thả (Drag & Drop) Tối ưu cho Mobile & PC ---
+        
+        // Ngăn chặn menu mở khi bắt đầu kéo
+        touchBtn.addEventListener('contextmenu', e => e.preventDefault());
+
+        function unify(e) { return e.changedTouches ? e.changedTouches[0] : e; }
+
+        function dragStart(e) {
+            if (e.target.closest('#touch-menu')) return; // Không kéo khi bấm vào menu
+
             isDragging = true;
             hasMoved = false;
-            startX = e.clientX;
-            startY = e.clientY;
+            const client = unify(e);
+            startX = client.clientX;
+            startY = client.clientY;
 
-            const rect = touchContainer.getBoundingClientRect();
-            touchContainer.style.bottom = 'auto';
-            touchContainer.style.right = 'auto';
-            touchContainer.style.left = rect.left + 'px';
-            touchContainer.style.top = rect.top + 'px';
-
+            const rect = wrapper.getBoundingClientRect();
+            
+            // Chuyển đổi vị trí sang absolute để bắt đầu kéo
+            wrapper.style.left = rect.left + 'px';
+            wrapper.style.top = rect.top + 'px';
+            wrapper.style.right = 'auto';
+            wrapper.style.bottom = 'auto';
+            
             initialX = rect.left;
             initialY = rect.top;
 
-            touchBtn.setPointerCapture(e.pointerId);
-        });
+            // Đóng menu nếu đang mở khi bắt đầu kéo
+            wrapper.classList.remove('menu-open');
 
-        touchBtn.addEventListener('pointermove', (e) => {
+            document.addEventListener('mousemove', drag);
+            document.addEventListener('touchmove', drag, { passive: false });
+            document.addEventListener('mouseup', dragEnd);
+            document.addEventListener('touchend', dragEnd);
+        }
+
+        function drag(e) {
             if (!isDragging) return;
+            e.preventDefault(); // Chặn cuộn trang khi đang kéo
+            
+            const client = unify(e);
+            const dx = client.clientX - startX;
+            const dy = clientY - startY;
 
-            const dx = e.clientX - startX;
-            const dy = e.clientY - startY;
-
+            // Nếu di chuyển quá 5px, coi như là đang kéo (không phải click)
             if (Math.abs(dx) > 5 || Math.abs(dy) > 5) {
                 hasMoved = true;
-                touchMenu.classList.remove('active'); // Đang kéo thì ẩn menu đi
             }
 
             let newX = initialX + dx;
             let newY = initialY + dy;
 
-            // Giới hạn nút không bị kéo ra ngoài màn hình
-            const maxX = window.innerWidth - touchContainer.offsetWidth;
-            const maxY = window.innerHeight - touchContainer.offsetHeight;
+            // Giới hạn không cho kéo ra ngoài màn hình
+            const btnWidth = wrapper.offsetWidth;
+            const btnHeight = wrapper.offsetHeight;
+            const margin = 10; // Khoảng cách an toàn với cạnh màn hình
 
-            newX = Math.max(0, Math.min(newX, maxX));
-            newY = Math.max(0, Math.min(newY, maxY));
+            newX = Math.max(margin, Math.min(newX, window.innerWidth - btnWidth - margin));
+            newY = Math.max(margin, Math.min(newY, window.innerHeight - btnHeight - margin));
 
-            touchContainer.style.left = newX + 'px';
-            touchContainer.style.top = newY + 'px';
-        });
+            wrapper.style.left = newX + 'px';
+            wrapper.style.top = newY + 'px';
+        }
 
-        touchBtn.addEventListener('pointerup', (e) => {
+        function dragEnd(e) {
             if (!isDragging) return;
             isDragging = false;
-            touchBtn.releasePointerCapture(e.pointerId);
 
-            // Nếu chỉ chạm/bấm nhẹ mà không kéo thì bật/tắt menu
-            if (!hasMoved) {
-                touchMenu.classList.toggle('active');
-            }
-        });
-
-        // Bấm ra bên ngoài thì tự động đóng menu
-        document.addEventListener('click', function(e) {
-            if (!touchContainer.contains(e.target)) {
-                touchMenu.classList.remove('active');
-            }
-        });
-
-        function loadTool(url) {
-            document.getElementById('tool-frame').src = url;
-            touchMenu.classList.remove('active');
+            document.removeEventListener('mousemove', drag);
+            document.removeEventListener('touchmove', drag);
+            document.removeEventListener('mouseup', dragEnd);
+            document.removeEventListener('touchend', dragEnd);
         }
+
+        // --- Xử lý Click/Tap (Mở đóng menu) ---
+        function btnClick(e) {
+            // Nếu có di chuyển khi kéo, không thực hiện click
+            if (hasMoved) return;
+            
+            // Kiểm tra xem click có nằm trong menu không
+            if (e.target.closest('#touch-menu')) return;
+
+            wrapper.classList.toggle('menu-open');
+        }
+
+        // Gắn sự kiện
+        touchBtn.addEventListener('mousedown', dragStart);
+        touchBtn.addEventListener('touchstart', dragStart, { passive: false });
+        
+        // Sử dụng click thay vì touchend/mouseup để tránh xung đột với drag
+        touchBtn.addEventListener('click', btnClick);
+
+        // --- Đóng menu khi chọn công cụ hoặc bấm ra ngoài ---
+        function loadTool(url) {
+            iframe.src = url;
+            wrapper.classList.remove('menu-open'); // Đóng menu sau khi chọn
+        }
+
+        // Bấm ra ngoài vùng menu/nút thì đóng menu
+        document.addEventListener('click', function(event) {
+            const isClickInside = wrapper.contains(event.target);
+            if (!isClickInside && wrapper.classList.contains('menu-open')) {
+                wrapper.classList.remove('menu-open');
+            }
+        });
+        
+        // Ngăn sự kiện nổi bọt từ menu ra ngoài
+        touchMenu.addEventListener('click', function(e) {
+            e.stopPropagation();
+        });
+
     </script>
 </body>
 </html>

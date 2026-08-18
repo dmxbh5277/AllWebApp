@@ -26,28 +26,28 @@
             right: 25px;
             z-index: 9999;
             user-select: none;
-            touch-action: none; /* Quan trọng: Chặn cuộn trang để ưu tiên kéo nút trên mobile */
+            touch-action: none;
             cursor: grab;
         }
         #assistive-touch:active {
             cursor: grabbing;
         }
 
-        /* --- Thiết kế Nút bấm (The Button) --- */
+        /* --- Thiết kế Nút bấm (Tăng độ trong suốt) --- */
         #touch-btn {
             width: 60px;
             height: 60px;
             
-            /* Hiệu ứng Glassmorphism */
-            background: rgba(255, 255, 255, 0.1);
-            backdrop-filter: blur(10px);
-            -webkit-backdrop-filter: blur(10px);
+            /* Hiệu ứng Glassmorphism trong suốt hơn */
+            background: rgba(255, 255, 255, 0.05); /* Giảm độ đục xuống mức rất mờ */
+            backdrop-filter: blur(8px);
+            -webkit-backdrop-filter: blur(8px);
             
-            border: 1px solid rgba(255, 255, 255, 0.2);
+            border: 1px solid rgba(255, 255, 255, 0.12); /* Viền mỏng nhẹ tinh tế */
             border-radius: 50%;
             
-            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3), 
-                        inset 0 0 0 1px rgba(255, 255, 255, 0.1);
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.25), 
+                        inset 0 0 0 1px rgba(255, 255, 255, 0.05);
             
             display: flex;
             align-items: center;
@@ -55,7 +55,7 @@
             
             transition: transform 0.2s ease, background 0.3s ease;
             
-            color: rgba(255, 255, 255, 0.9);
+            color: rgba(255, 255, 255, 0.85);
             font-size: 28px;
             line-height: 1;
             font-weight: 300;
@@ -63,13 +63,13 @@
 
         #touch-btn:active {
             transform: scale(0.95);
-            background: rgba(255, 255, 255, 0.15);
+            background: rgba(255, 255, 255, 0.1);
         }
 
         /* Khi menu mở, đổi trạng thái nút */
         #assistive-touch.menu-open #touch-btn {
-            background: rgba(52, 152, 219, 0.2);
-            border-color: rgba(52, 152, 219, 0.5);
+            background: rgba(52, 152, 219, 0.15);
+            border-color: rgba(52, 152, 219, 0.4);
             color: #3498db;
         }
         
@@ -178,8 +178,6 @@
                 <li onclick="loadTool('https://dmxbh5277.github.io/BCQ-/')">Báo cáo quy đổi</li>
                 <li onclick="loadTool('https://dmxbh5277.github.io/BH/')">Tính Bảo hiểm</li>
                 <li onclick="loadTool('https://dmxbh5277.github.io/THUONGNONG/')">Tra Thưởng Nóng</li>
-                <li onclick="loadTool('https://dmxbh5277.github.io/combo/')">Tính Combo</li>
-                <li onclick="loadTool('https://dmxbh5277.github.io/ketien/')">Kê Tiền</li>
             </ul>
         </div>
     </div>
@@ -195,7 +193,6 @@
 
         // --- Xử lý Kéo thả mượt mà bằng Pointer Events ---
         wrapper.addEventListener('pointerdown', (e) => {
-            // Nếu bấm vào menu thì không kích hoạt kéo nút
             if (e.target.closest('#touch-menu')) return;
 
             isDragging = true;
@@ -205,7 +202,6 @@
 
             const rect = wrapper.getBoundingClientRect();
             
-            // Cố định vị trí hiện tại theo pixel
             wrapper.style.left = rect.left + 'px';
             wrapper.style.top = rect.top + 'px';
             wrapper.style.right = 'auto';
@@ -214,10 +210,7 @@
             initialX = rect.left;
             initialY = rect.top;
 
-            // Bắt sự kiện con trỏ để kéo mượt kể cả khi ra ngoài khung
             wrapper.setPointerCapture(e.pointerId);
-
-            // Đang chuẩn bị kéo thì đóng menu nếu nó đang mở
             wrapper.classList.remove('menu-open');
         });
 
@@ -227,7 +220,6 @@
             const dx = e.clientX - startX;
             const dy = e.clientY - startY;
 
-            // Nếu di chuyển vượt quá 5px thì xác nhận đây là thao tác KÉO (không phải bấm mở menu)
             if (Math.abs(dx) > 5 || Math.abs(dy) > 5) {
                 hasMoved = true;
             }
@@ -235,7 +227,6 @@
             let newX = initialX + dx;
             let newY = initialY + dy;
 
-            // Giới hạn nút không bị kéo ra ngoài màn hình
             const btnWidth = wrapper.offsetWidth;
             const btnHeight = wrapper.offsetHeight;
             const margin = 10;
@@ -255,7 +246,6 @@
                 wrapper.releasePointerCapture(e.pointerId);
             } catch (err) {}
 
-            // Nếu không di chuyển (chỉ chạm nhẹ/click) thì mở hoặc đóng menu
             if (!hasMoved) {
                 wrapper.classList.toggle('menu-open');
             }
@@ -275,7 +265,6 @@
             }
         });
 
-        // Ngăn chặn sự kiện click nổi bọt từ menu ra ngoài
         touchMenu.addEventListener('click', function(e) {
             e.stopPropagation();
         });

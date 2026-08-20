@@ -2,7 +2,8 @@
 <html lang="vi">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <!-- ĐÃ SỬA: Cho phép người dùng thu phóng (user-scalable=yes, bỏ maximum-scale=1.0) -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
     <title>Điện Máy Xanh Bình Hòa - Hub</title>
     <!-- Import Google Fonts hiện đại -->
     <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700;900&display=swap" rel="stylesheet">
@@ -19,7 +20,17 @@
 
         /* Container chứa web app */
         #main-container { width: 100%; height: 100vh; position: relative; display: flex; flex-direction: column; }
-        iframe { width: 100%; height: 100%; border: none; display: block; flex-grow: 1; }
+        
+        /* ĐÃ SỬA: Thêm touch-action và -webkit-overflow-scrolling để cuộn và zoom mượt hơn trên mobile */
+        iframe { 
+            width: 100%; 
+            height: 100%; 
+            border: none; 
+            display: block; 
+            flex-grow: 1; 
+            touch-action: auto;
+            -webkit-overflow-scrolling: touch;
+        }
 
         /* --- Giao diện Trang Chủ (Home Dashboard) Điện Máy Xanh --- */
         #home-view {

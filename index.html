@@ -2,47 +2,37 @@
 <html lang="vi">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, viewport-fit=cover">
+    <!-- Cho phép người dùng thu phóng (user-scalable=yes, bỏ maximum-scale=1.0) -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
     <title>Điện Máy Xanh Bình Hòa - Hub</title>
+    <!-- Import Google Fonts hiện đại -->
     <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700;900&display=swap" rel="stylesheet">
     <style>
+        /* Reset & Cơ bản */
         * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
-        
-        html, body { 
+        body { 
             font-family: 'Google Sans', 'Roboto', -apple-system, BlinkMacSystemFont, sans-serif; 
-            height: 100%;
-            height: 100dvh;
-            width: 100vw;
+            height: 100vh; 
             overflow: hidden; 
             background-color: #f1f5f9; 
+            overscroll-behavior: none;
         }
 
-        #main-container { 
-            width: 100%; 
-            height: 100%; 
-            position: relative; 
-            display: flex; 
-            flex-direction: column; 
-        }
+        /* Container chứa web app */
+        #main-container { width: 100%; height: 100vh; position: relative; display: flex; flex-direction: column; }
         
-        /* Container bọc iframe sửa lỗi cuộn trên iOS */
-        .iframe-wrapper {
-            width: 100%;
-            height: 100%;
-            flex-grow: 1;
-            overflow-y: auto;
-            -webkit-overflow-scrolling: touch;
-            position: relative;
-        }
-
+        /* Cấu hình iframe mượt mà và cho phép tương tác touch tốt hơn */
         iframe { 
             width: 100%; 
             height: 100%; 
-            min-height: 100%;
             border: none; 
             display: block; 
+            flex-grow: 1; 
+            touch-action: auto;
+            -webkit-overflow-scrolling: touch;
         }
 
+        /* --- Giao diện Trang Chủ (Home Dashboard) Điện Máy Xanh --- */
         #home-view {
             position: absolute;
             top: 0; left: 0; width: 100%; height: 100%;
@@ -54,7 +44,7 @@
             z-index: 10;
             padding: 20px;
             color: white;
-            transition: opacity 0.3s ease, visibility 0.3s ease;
+            transition: opacity 0.4s ease, visibility 0.4s ease;
         }
         #home-view.hidden {
             opacity: 0;
@@ -62,16 +52,18 @@
             pointer-events: none;
         }
 
+        /* Tiêu đề văn bản: Viết hoa đều, màu vàng, font hiện đại */
         .home-header {
             text-align: center;
-            margin-bottom: 25px;
+            margin-bottom: 30px;
             display: flex;
             flex-direction: column;
             align-items: center;
         }
 
         .main-title {
-            font-size: 32px;
+            font-family: 'Google Sans', 'Roboto', sans-serif;
+            font-size: 36px;
             font-weight: 900;
             text-transform: uppercase;
             color: #ffcc00;
@@ -81,53 +73,56 @@
         }
 
         .home-subtitle {
-            font-size: 16px;
+            font-size: 18px;
             font-weight: 700;
             color: #ffffff;
             letter-spacing: 3px;
             text-transform: uppercase;
-            margin-top: 6px;
+            text-shadow: 0 1px 4px rgba(0,0,0,0.3);
+            margin-top: 8px;
         }
 
+        /* Danh sách menu dạng ma trận đều (3 cột x 2 hàng) */
         .home-grid {
             display: grid;
             grid-template-columns: repeat(3, 1fr);
-            gap: 10px;
+            gap: 12px;
             width: 100%;
-            max-width: 420px;
+            max-width: 460px;
             padding: 5px;
         }
 
         .home-card {
-            background: rgba(255, 255, 255, 0.12);
+            background: rgba(255, 255, 255, 0.1);
             backdrop-filter: blur(12px);
             -webkit-backdrop-filter: blur(12px);
-            border: 1px solid rgba(255, 255, 255, 0.2);
+            border: 1px solid rgba(255, 255, 255, 0.15);
             border-radius: 14px;
             text-align: center;
             cursor: pointer;
-            transition: transform 0.2s ease, background 0.2s ease;
+            transition: all 0.25s ease;
             box-shadow: 0 4px 15px rgba(0,0,0,0.2);
             display: flex;
             flex-direction: column;
             align-items: center;
             justify-content: center;
             aspect-ratio: 1 / 1;
-            padding: 8px;
+            padding: 12px;
         }
 
-        .home-card:active {
-            transform: scale(0.95);
-            background: rgba(255, 204, 0, 0.25);
+        .home-card:hover {
+            background: rgba(255, 204, 0, 0.2);
+            border-color: #ffcc00;
+            transform: translateY(-4px);
         }
 
         .home-card .card-icon {
-            font-size: 24px;
-            margin-bottom: 4px;
+            font-size: 26px;
+            margin-bottom: 6px;
         }
 
         .home-card span {
-            font-size: 12px;
+            font-size: 13px;
             font-weight: 600;
             color: #fff;
             line-height: 1.2;
@@ -137,59 +132,75 @@
             overflow: hidden;
         }
 
+        /* --- Vùng Assistive Touch (Nút nổi) --- */
         #assistive-touch {
             position: fixed;
-            bottom: calc(20px + env(safe-area-inset-bottom));
-            right: 20px;
+            bottom: 25px;
+            right: 25px;
             z-index: 9999;
             user-select: none;
             touch-action: none;
             cursor: grab;
         }
+        #assistive-touch:active { cursor: grabbing; }
 
+        /* Nút bấm trong suốt */
         #touch-btn {
-            width: 56px;
-            height: 56px;
-            background: rgba(0, 86, 179, 0.25);
-            backdrop-filter: blur(10px);
-            -webkit-backdrop-filter: blur(10px);
-            border: 1.5px solid rgba(255, 204, 0, 0.6);
+            width: 60px;
+            height: 60px;
+            background: rgba(0, 86, 179, 0.15);
+            backdrop-filter: blur(8px);
+            -webkit-backdrop-filter: blur(8px);
+            border: 1px solid rgba(255, 204, 0, 0.4);
             border-radius: 50%;
-            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.25), inset 0 0 0 1px rgba(255, 255, 255, 0.1);
             display: flex;
             align-items: center;
             justify-content: center;
+            transition: transform 0.2s ease, background 0.3s ease;
             color: #ffcc00;
-            font-size: 24px;
-            position: relative;
+            font-size: 28px;
+            line-height: 1;
+            font-weight: 300;
         }
+        #touch-btn:active {
+            transform: scale(0.95);
+            background: rgba(0, 86, 179, 0.3);
+        }
+
+        #assistive-touch.menu-open #touch-btn {
+            background: rgba(0, 86, 179, 0.4);
+            border-color: #ffcc00;
+            color: #ffcc00;
+        }
+        
+        #assistive-touch.menu-open #touch-btn .icon-bar { opacity: 0; }
+        #assistive-touch.menu-open #touch-btn .icon-close { opacity: 1; }
 
         #touch-btn .btn-icon {
             position: absolute;
-            transition: opacity 0.25s ease, transform 0.25s ease;
+            transition: opacity 0.3s ease, transform 0.3s ease;
         }
-        #touch-btn .icon-close { opacity: 0; transform: rotate(-90deg); font-weight: bold; }
+        #touch-btn .icon-close { opacity: 0; transform: rotate(-90deg); font-size: 24px; font-weight: bold;}
         #touch-btn .icon-bar { opacity: 1; transform: rotate(0deg); }
 
-        #assistive-touch.menu-open #touch-btn .icon-bar { opacity: 0; transform: rotate(90deg); }
-        #assistive-touch.menu-open #touch-btn .icon-close { opacity: 1; transform: rotate(0deg); }
-
+        /* --- Thiết kế Menu Popup --- */
         #touch-menu {
             position: absolute;
-            bottom: 70px; 
+            bottom: 75px; 
             right: 0;
-            width: 220px;
-            background: rgba(15, 23, 42, 0.94);
-            backdrop-filter: blur(16px);
-            -webkit-backdrop-filter: blur(16px);
+            width: 230px;
+            background: rgba(15, 23, 42, 0.95);
+            backdrop-filter: blur(15px);
+            -webkit-backdrop-filter: blur(15px);
             border-radius: 16px;
-            border: 1px solid rgba(255, 204, 0, 0.3);
-            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
-            padding: 6px 0;
+            border: 1px solid rgba(255, 204, 0, 0.2);
+            box-shadow: 0 10px 40px rgba(0,0,0,0.5), 0 0 0 1px rgba(0,0,0,0.1);
+            padding: 8px 0;
             visibility: hidden;
             opacity: 0;
-            transform: translateY(10px) scale(0.95);
-            transition: all 0.25s ease;
+            transform: translateY(15px) scale(0.95);
+            transition: opacity 0.3s ease, transform 0.3s ease, visibility 0.3s;
             transform-origin: bottom right;
         }
 
@@ -199,15 +210,18 @@
             transform: translateY(0) scale(1);
         }
 
-        #touch-menu ul { list-style: none; max-height: 60vh; overflow-y: auto; }
+        #touch-menu ul { list-style: none; max-height: calc(100vh - 150px); overflow-y: auto; }
+        #touch-menu ul::-webkit-scrollbar { width: 4px; }
+        #touch-menu ul::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 2px; }
 
         #touch-menu li {
-            padding: 12px 18px;
-            color: rgba(255, 255, 255, 0.9);
+            padding: 12px 20px;
+            color: rgba(255, 255, 255, 0.85);
             cursor: pointer;
             font-size: 14px;
             font-weight: 500;
-            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+            transition: background 0.2s ease, color 0.2s ease, padding-left 0.2s ease;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.03);
             display: flex;
             align-items: center;
         }
@@ -215,18 +229,30 @@
         
         #touch-menu li.menu-home {
             color: #ffcc00;
-            font-weight: 700;
+            font-weight: 600;
             border-bottom: 1px solid rgba(255, 204, 0, 0.2);
         }
 
-        #touch-menu li:active {
-            background: rgba(255, 204, 0, 0.2);
+        #touch-menu li::before {
+            content: '•';
             color: #ffcc00;
+            font-size: 20px;
+            margin-right: 10px;
+            opacity: 0;
+            transition: opacity 0.2s;
         }
+
+        #touch-menu li:hover {
+            background: rgba(255, 204, 0, 0.15);
+            color: #ffcc00;
+            padding-left: 24px;
+        }
+        #touch-menu li:hover::before { opacity: 1; }
     </style>
 </head>
 <body>
 
+    <!-- Giao diện trang Home Điện Máy Xanh -->
     <div id="home-view">
         <div class="home-header">
             <h1 class="main-title">ĐIỆN MÁY XANH</h1>
@@ -242,17 +268,13 @@
                 <div class="card-icon">🎟️</div>
                 <span>Lọc Coupon</span>
             </div>
-            <div class="home-card" onclick="loadTool('https://dmxbh5277.github.io/BCQ-/?v=2.0')">
+            <div class="home-card" onclick="loadTool('https://dmxbh5277.github.io/BCQ-/')">
                 <div class="card-icon">📊</div>
                 <span>Báo cáo quy đổi</span>
             </div>
             <div class="home-card" onclick="loadTool('https://dmxbh5277.github.io/BH/')">
                 <div class="card-icon">🛡️</div>
                 <span>Tính Bảo hiểm</span>
-            </div>
-            <div class="home-card" onclick="loadTool('https://dmxbh5277.github.io/combo/')">
-                <div class="card-icon">🔖</div>
-                <span>Tính Combo</span>
             </div>
             <div class="home-card" onclick="loadTool('https://dmxbh5277.github.io/THUONGNONG/')">
                 <div class="card-icon">🔥</div>
@@ -265,12 +287,12 @@
         </div>
     </div>
 
+    <!-- Container chứa iframe web app -->
     <div id="main-container">
-        <div class="iframe-wrapper">
-            <iframe id="tool-frame" src="" allow="fullscreen; clipboard-write; storage-access" scrolling="yes"></iframe>
-        </div>
+        <iframe id="tool-frame" src=""></iframe>
     </div>
 
+    <!-- Nút Assistive Touch -->
     <div id="assistive-touch">
         <div id="touch-btn">
             <span class="btn-icon icon-bar">☰</span>
@@ -282,9 +304,8 @@
                 <li class="menu-home" onclick="goHome()">🏠 Trang chủ Home</li>
                 <li onclick="loadTool('https://dmxbh5277.github.io/locpmh/')">Lọc PMH</li>
                 <li onclick="loadTool('https://dmxbh5277.github.io/coupon/')">Lọc Coupon</li>
-                <li onclick="loadTool('https://dmxbh5277.github.io/BCQ-/?v=2.0')">Báo cáo quy đổi</li>
+                <li onclick="loadTool('https://dmxbh5277.github.io/BCQ-/')">Báo cáo quy đổi</li>
                 <li onclick="loadTool('https://dmxbh5277.github.io/BH/')">Tính Bảo hiểm</li>
-                <li onclick="loadTool('https://dmxbh5277.github.io/combo/')">Tính Combo</li>
                 <li onclick="loadTool('https://dmxbh5277.github.io/THUONGNONG/')">Tra Thưởng Nóng</li>
                 <li onclick="loadTool('https://dmxbh5277.github.io/ketien/')">Kê Tiền</li>
             </ul>
@@ -301,6 +322,7 @@
         let hasMoved = false;
         let startX, startY, initialX, initialY;
 
+        // --- Xử lý Kéo thả mượt mà bằng Pointer Events ---
         wrapper.addEventListener('pointerdown', (e) => {
             if (e.target.closest('#touch-menu')) return;
 
@@ -310,6 +332,7 @@
             startY = e.clientY;
 
             const rect = wrapper.getBoundingClientRect();
+            
             wrapper.style.left = rect.left + 'px';
             wrapper.style.top = rect.top + 'px';
             wrapper.style.right = 'auto';
@@ -328,7 +351,7 @@
             const dx = e.clientX - startX;
             const dy = e.clientY - startY;
 
-            if (Math.abs(dx) > 6 || Math.abs(dy) > 6) {
+            if (Math.abs(dx) > 5 || Math.abs(dy) > 5) {
                 hasMoved = true;
             }
 
@@ -350,15 +373,22 @@
             if (!isDragging) return;
             isDragging = false;
             
-            try { wrapper.releasePointerCapture(e.pointerId); } catch (err) {}
+            try {
+                wrapper.releasePointerCapture(e.pointerId);
+            } catch (err) {}
 
             if (!hasMoved) {
                 wrapper.classList.toggle('menu-open');
             }
         });
 
+        // --- Điều hướng & Tải Web App với cơ chế Cache-Busting ---
         function loadTool(url) {
-            iframe.src = url;
+            // Đính kèm timestamp hiện tại để tạo URL duy nhất mỗi lần mở, ép trình duyệt tải bản mới nhất từ server
+            const cacheBuster = 'v=' + Date.now();
+            const finalUrl = url.includes('?') ? `${url}&${cacheBuster}` : `${url}?${cacheBuster}`;
+            
+            iframe.src = finalUrl;
             homeView.classList.add('hidden');
             wrapper.classList.remove('menu-open');
         }
@@ -366,16 +396,17 @@
         function goHome() {
             homeView.classList.remove('hidden');
             wrapper.classList.remove('menu-open');
-            iframe.src = 'about:blank'; // Giải phóng bộ nhớ khi về trang chủ
         }
 
-        document.addEventListener('pointerdown', function(event) {
-            if (!wrapper.contains(event.target) && wrapper.classList.contains('menu-open')) {
+        // Bấm ra ngoài vùng nút/menu thì tự động đóng menu
+        document.addEventListener('click', function(event) {
+            const isClickInside = wrapper.contains(event.target);
+            if (!isClickInside && wrapper.classList.contains('menu-open')) {
                 wrapper.classList.remove('menu-open');
             }
         });
 
-        touchMenu.addEventListener('pointerdown', function(e) {
+        touchMenu.addEventListener('click', function(e) {
             e.stopPropagation();
         });
     </script>

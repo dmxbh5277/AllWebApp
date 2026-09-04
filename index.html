@@ -2,40 +2,69 @@
 <html lang="vi">
 <head>
     <meta charset="UTF-8">
-    <!-- Cho phép người dùng thu phóng (user-scalable=yes, bỏ maximum-scale=1.0) -->
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+    <!-- Viewport chuẩn Mobile: Mở thu phóng, tối ưu không gian hiển thị -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes, viewport-fit=cover">
     <title>Điện Máy Xanh Bình Hòa - Hub</title>
-    <!-- Import Google Fonts hiện đại -->
+    
+    <!-- Google Fonts -->
     <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700;900&display=swap" rel="stylesheet">
+    
     <style>
-        /* Reset & Cơ bản */
-        * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
-        body { 
-            font-family: 'Google Sans', 'Roboto', -apple-system, BlinkMacSystemFont, sans-serif; 
-            height: 100vh; 
-            overflow: hidden; 
-            background-color: #f1f5f9; 
-            overscroll-behavior: none;
+        /* --- 1. RESET & MOBILE OPTIMIZATION --- */
+        * { 
+            box-sizing: border-box; 
+            margin: 0; 
+            padding: 0; 
+            -webkit-tap-highlight-color: transparent; 
         }
 
-        /* Container chứa web app */
-        #main-container { width: 100%; height: 100vh; position: relative; display: flex; flex-direction: column; }
-        
-        /* Cấu hình iframe mượt mà và cho phép tương tác touch tốt hơn */
+        html, body {
+            /* Dùng 100dvh để xử lý triệt để lỗi mất góc trên iOS Safari & Android Chrome */
+            height: 100dvh;
+            width: 100vw;
+            overflow: hidden;
+            background-color: #002b5c;
+            font-family: 'Google Sans', 'Roboto', -apple-system, BlinkMacSystemFont, sans-serif;
+            overscroll-behavior: none; /* Chống hiệu ứng nảy trang của iOS */
+        }
+
+        /* --- 2. MAIN CONTAINER & IFRAME WRAPPER --- */
+        #main-container { 
+            width: 100%; 
+            height: 100dvh; 
+            position: relative; 
+            display: flex; 
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        /* Container bọc iframe: Đảm bảo cuộn cực mượt trên iOS/Android */
+        .iframe-wrapper {
+            width: 100%;
+            height: 100%;
+            flex-grow: 1;
+            overflow-y: auto;
+            -webkit-overflow-scrolling: touch; /* Bắt buộc cho mượt trên iOS Safari */
+            position: relative;
+        }
+
         iframe { 
             width: 100%; 
+            min-width: 100%;
             height: 100%; 
+            min-height: 100%;
             border: none; 
-            display: block; 
-            flex-grow: 1; 
+            display: block;
             touch-action: auto;
-            -webkit-overflow-scrolling: touch;
         }
 
-        /* --- Giao diện Trang Chủ (Home Dashboard) Điện Máy Xanh --- */
+        /* --- 3. GIAO DIỆN HOME DASHBOARD --- */
         #home-view {
             position: absolute;
-            top: 0; left: 0; width: 100%; height: 100%;
+            top: 0; 
+            left: 0; 
+            width: 100%; 
+            height: 100dvh;
             background: linear-gradient(135deg, #0056b3 0%, #002b5c 100%);
             display: flex;
             flex-direction: column;
@@ -43,27 +72,30 @@
             justify-content: center;
             z-index: 10;
             padding: 20px;
+            /* Xử lý Safe Area cho iPhone tai thỏ / đốm camera */
+            padding-top: calc(20px + env(safe-area-inset-top));
+            padding-bottom: calc(20px + env(safe-area-inset-bottom));
             color: white;
-            transition: opacity 0.4s ease, visibility 0.4s ease;
+            transition: opacity 0.3s ease, visibility 0.3s ease;
+            overflow-y: auto;
         }
+
         #home-view.hidden {
             opacity: 0;
             visibility: hidden;
             pointer-events: none;
         }
 
-        /* Tiêu đề văn bản: Viết hoa đều, màu vàng, font hiện đại */
         .home-header {
             text-align: center;
-            margin-bottom: 30px;
+            margin-bottom: 25px;
             display: flex;
             flex-direction: column;
             align-items: center;
         }
 
         .main-title {
-            font-family: 'Google Sans', 'Roboto', sans-serif;
-            font-size: 36px;
+            font-size: clamp(28px, 8vw, 36px); /* Co giãn font chữ thông minh theo màn hình */
             font-weight: 900;
             text-transform: uppercase;
             color: #ffcc00;
@@ -73,56 +105,56 @@
         }
 
         .home-subtitle {
-            font-size: 18px;
+            font-size: clamp(14px, 4.5vw, 18px);
             font-weight: 700;
             color: #ffffff;
             letter-spacing: 3px;
             text-transform: uppercase;
             text-shadow: 0 1px 4px rgba(0,0,0,0.3);
-            margin-top: 8px;
+            margin-top: 6px;
         }
 
-        /* Danh sách menu dạng ma trận đều (3 cột x 2 hàng) */
+        /* Grid menu tối ưu mobile */
         .home-grid {
             display: grid;
             grid-template-columns: repeat(3, 1fr);
-            gap: 12px;
+            gap: 10px;
             width: 100%;
-            max-width: 460px;
+            max-width: 420px;
             padding: 5px;
         }
 
         .home-card {
-            background: rgba(255, 255, 255, 0.1);
+            background: rgba(255, 255, 255, 0.12);
             backdrop-filter: blur(12px);
             -webkit-backdrop-filter: blur(12px);
-            border: 1px solid rgba(255, 255, 255, 0.15);
+            border: 1px solid rgba(255, 255, 255, 0.2);
             border-radius: 14px;
             text-align: center;
             cursor: pointer;
-            transition: all 0.25s ease;
+            transition: transform 0.2s ease, background 0.2s ease;
             box-shadow: 0 4px 15px rgba(0,0,0,0.2);
             display: flex;
             flex-direction: column;
             align-items: center;
             justify-content: center;
             aspect-ratio: 1 / 1;
-            padding: 12px;
+            padding: 8px;
         }
 
-        .home-card:hover {
-            background: rgba(255, 204, 0, 0.2);
+        .home-card:active {
+            transform: scale(0.95);
+            background: rgba(255, 204, 0, 0.25);
             border-color: #ffcc00;
-            transform: translateY(-4px);
         }
 
         .home-card .card-icon {
-            font-size: 26px;
-            margin-bottom: 6px;
+            font-size: 24px;
+            margin-bottom: 4px;
         }
 
         .home-card span {
-            font-size: 13px;
+            font-size: 12px;
             font-weight: 600;
             color: #fff;
             line-height: 1.2;
@@ -132,75 +164,56 @@
             overflow: hidden;
         }
 
-        /* --- Vùng Assistive Touch (Nút nổi) --- */
+        /* --- 4. ASSISTIVE TOUCH (NÚT NỔI OPTIMIZE MOBILE) --- */
         #assistive-touch {
             position: fixed;
-            bottom: 25px;
-            right: 25px;
+            /* Né khu vực Home Bar của iOS / Android tràn viền */
+            bottom: calc(20px + env(safe-area-inset-bottom));
+            right: calc(20px + env(safe-area-inset-right));
             z-index: 9999;
             user-select: none;
             touch-action: none;
             cursor: grab;
         }
-        #assistive-touch:active { cursor: grabbing; }
 
-        /* Nút bấm trong suốt */
         #touch-btn {
-            width: 60px;
-            height: 60px;
-            background: rgba(0, 86, 179, 0.15);
-            backdrop-filter: blur(8px);
-            -webkit-backdrop-filter: blur(8px);
-            border: 1px solid rgba(255, 204, 0, 0.4);
+            width: 56px;
+            height: 56px;
+            background: rgba(0, 43, 92, 0.6);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border: 1.5px solid rgba(255, 204, 0, 0.6);
             border-radius: 50%;
-            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.25), inset 0 0 0 1px rgba(255, 255, 255, 0.1);
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
             display: flex;
             align-items: center;
             justify-content: center;
-            transition: transform 0.2s ease, background 0.3s ease;
             color: #ffcc00;
-            font-size: 28px;
-            line-height: 1;
-            font-weight: 300;
+            font-size: 24px;
         }
+
         #touch-btn:active {
-            transform: scale(0.95);
-            background: rgba(0, 86, 179, 0.3);
+            transform: scale(0.92);
+            background: rgba(0, 86, 179, 0.8);
         }
 
-        #assistive-touch.menu-open #touch-btn {
-            background: rgba(0, 86, 179, 0.4);
-            border-color: #ffcc00;
-            color: #ffcc00;
-        }
-        
-        #assistive-touch.menu-open #touch-btn .icon-bar { opacity: 0; }
-        #assistive-touch.menu-open #touch-btn .icon-close { opacity: 1; }
-
-        #touch-btn .btn-icon {
-            position: absolute;
-            transition: opacity 0.3s ease, transform 0.3s ease;
-        }
-        #touch-btn .icon-close { opacity: 0; transform: rotate(-90deg); font-size: 24px; font-weight: bold;}
-        #touch-btn .icon-bar { opacity: 1; transform: rotate(0deg); }
-
-        /* --- Thiết kế Menu Popup --- */
+        /* Menu Popup */
         #touch-menu {
             position: absolute;
-            bottom: 75px; 
+            bottom: 68px; 
             right: 0;
-            width: 230px;
-            background: rgba(15, 23, 42, 0.95);
-            backdrop-filter: blur(15px);
-            -webkit-backdrop-filter: blur(15px);
+            width: 210px;
+            background: rgba(15, 23, 42, 0.96);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
             border-radius: 16px;
-            border: 1px solid rgba(255, 204, 0, 0.2);
-            box-shadow: 0 10px 40px rgba(0,0,0,0.5), 0 0 0 1px rgba(0,0,0,0.1);
-            padding: 8px 0;
+            border: 1px solid rgba(255, 204, 0, 0.3);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+            padding: 6px 0;
             visibility: hidden;
             opacity: 0;
-            transform: translateY(15px) scale(0.95);
-            transition: opacity 0.3s ease, transform 0.3s ease, visibility 0.3s;
+            transform: translateY(10px) scale(0.95);
+            transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
             transform-origin: bottom right;
         }
 
@@ -210,49 +223,38 @@
             transform: translateY(0) scale(1);
         }
 
-        #touch-menu ul { list-style: none; max-height: calc(100vh - 150px); overflow-y: auto; }
-        #touch-menu ul::-webkit-scrollbar { width: 4px; }
-        #touch-menu ul::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 2px; }
+        #touch-menu ul { 
+            list-style: none; 
+            max-height: 60dvh; 
+            overflow-y: auto; 
+            -webkit-overflow-scrolling: touch;
+        }
 
         #touch-menu li {
-            padding: 12px 20px;
-            color: rgba(255, 255, 255, 0.85);
-            cursor: pointer;
+            padding: 12px 18px;
+            color: rgba(255, 255, 255, 0.9);
             font-size: 14px;
             font-weight: 500;
-            transition: background 0.2s ease, color 0.2s ease, padding-left 0.2s ease;
-            border-bottom: 1px solid rgba(255, 255, 255, 0.03);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
             display: flex;
             align-items: center;
         }
-        #touch-menu li:last-child { border-bottom: none; }
-        
+
+        #touch-menu li:active {
+            background: rgba(255, 204, 0, 0.2);
+            color: #ffcc00;
+        }
+
         #touch-menu li.menu-home {
             color: #ffcc00;
-            font-weight: 600;
-            border-bottom: 1px solid rgba(255, 204, 0, 0.2);
+            font-weight: 700;
+            border-bottom: 1px solid rgba(255, 204, 0, 0.25);
         }
-
-        #touch-menu li::before {
-            content: '•';
-            color: #ffcc00;
-            font-size: 20px;
-            margin-right: 10px;
-            opacity: 0;
-            transition: opacity 0.2s;
-        }
-
-        #touch-menu li:hover {
-            background: rgba(255, 204, 0, 0.15);
-            color: #ffcc00;
-            padding-left: 24px;
-        }
-        #touch-menu li:hover::before { opacity: 1; }
     </style>
 </head>
 <body>
 
-    <!-- Giao diện trang Home Điện Máy Xanh -->
+    <!-- Giao diện Trang Chủ -->
     <div id="home-view">
         <div class="home-header">
             <h1 class="main-title">ĐIỆN MÁY XANH</h1>
@@ -276,6 +278,10 @@
                 <div class="card-icon">🛡️</div>
                 <span>Tính Bảo hiểm</span>
             </div>
+            <div class="home-card" onclick="loadTool('https://dmxbh5277.github.io/combo/')">
+                <div class="card-icon"></div>
+                <span>Tính Combo</span>
+            </div>
             <div class="home-card" onclick="loadTool('https://dmxbh5277.github.io/THUONGNONG/')">
                 <div class="card-icon">🔥</div>
                 <span>Tra Thưởng Nóng</span>
@@ -287,16 +293,17 @@
         </div>
     </div>
 
-    <!-- Container chứa iframe web app -->
+    <!-- Container chứa Iframe kèm Wrapper tối ưu Mobile Scroll -->
     <div id="main-container">
-        <iframe id="tool-frame" src=""></iframe>
+        <div class="iframe-wrapper">
+            <iframe id="tool-frame" src="" title="Web App Con"></iframe>
+        </div>
     </div>
 
-    <!-- Nút Assistive Touch -->
+    <!-- Nút Nổi Assistive Touch -->
     <div id="assistive-touch">
         <div id="touch-btn">
-            <span class="btn-icon icon-bar">☰</span>
-            <span class="btn-icon icon-close">✕</span>
+            <span class="btn-icon">☰</span>
         </div>
         
         <div id="touch-menu">
@@ -306,6 +313,7 @@
                 <li onclick="loadTool('https://dmxbh5277.github.io/coupon/')">Lọc Coupon</li>
                 <li onclick="loadTool('https://dmxbh5277.github.io/BCQ-/')">Báo cáo quy đổi</li>
                 <li onclick="loadTool('https://dmxbh5277.github.io/BH/')">Tính Bảo hiểm</li>
+                <li onclick="loadTool('https://dmxbh5277.github.io/combo/')">Tính Combo</li>
                 <li onclick="loadTool('https://dmxbh5277.github.io/THUONGNONG/')">Tra Thưởng Nóng</li>
                 <li onclick="loadTool('https://dmxbh5277.github.io/ketien/')">Kê Tiền</li>
             </ul>
@@ -322,7 +330,7 @@
         let hasMoved = false;
         let startX, startY, initialX, initialY;
 
-        // --- Xử lý Kéo thả mượt mà bằng Pointer Events ---
+        // --- XỬ LÝ KÉO THẢ DÀNH CHO MÀN HÌNH CẢM ỨNG (POINTER EVENTS) ---
         wrapper.addEventListener('pointerdown', (e) => {
             if (e.target.closest('#touch-menu')) return;
 
@@ -332,7 +340,6 @@
             startY = e.clientY;
 
             const rect = wrapper.getBoundingClientRect();
-            
             wrapper.style.left = rect.left + 'px';
             wrapper.style.top = rect.top + 'px';
             wrapper.style.right = 'auto';
@@ -342,7 +349,6 @@
             initialY = rect.top;
 
             wrapper.setPointerCapture(e.pointerId);
-            wrapper.classList.remove('menu-open');
         });
 
         wrapper.addEventListener('pointermove', (e) => {
@@ -351,7 +357,7 @@
             const dx = e.clientX - startX;
             const dy = e.clientY - startY;
 
-            if (Math.abs(dx) > 5 || Math.abs(dy) > 5) {
+            if (Math.abs(dx) > 6 || Math.abs(dy) > 6) {
                 hasMoved = true;
             }
 
@@ -373,18 +379,16 @@
             if (!isDragging) return;
             isDragging = false;
             
-            try {
-                wrapper.releasePointerCapture(e.pointerId);
-            } catch (err) {}
+            try { wrapper.releasePointerCapture(e.pointerId); } catch (err) {}
 
             if (!hasMoved) {
                 wrapper.classList.toggle('menu-open');
             }
         });
 
-        // --- Điều hướng & Tải Web App với cơ chế Cache-Busting ---
+        // --- ĐIỀU HƯỚNG & TẢI TRANG CÓ CACHE-BUSTING ---
         function loadTool(url) {
-            // Đính kèm timestamp hiện tại để tạo URL duy nhất mỗi lần mở, ép trình duyệt tải bản mới nhất từ server
+            // Đính kèm Timestamp phá Cache
             const cacheBuster = 'v=' + Date.now();
             const finalUrl = url.includes('?') ? `${url}&${cacheBuster}` : `${url}?${cacheBuster}`;
             
@@ -398,15 +402,15 @@
             wrapper.classList.remove('menu-open');
         }
 
-        // Bấm ra ngoài vùng nút/menu thì tự động đóng menu
-        document.addEventListener('click', function(event) {
+        // Đóng menu khi chạm ra ngoài
+        document.addEventListener('pointerdown', function(event) {
             const isClickInside = wrapper.contains(event.target);
             if (!isClickInside && wrapper.classList.contains('menu-open')) {
                 wrapper.classList.remove('menu-open');
             }
         });
 
-        touchMenu.addEventListener('click', function(e) {
+        touchMenu.addEventListener('pointerdown', function(e) {
             e.stopPropagation();
         });
     </script>
